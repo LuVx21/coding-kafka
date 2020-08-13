@@ -19,6 +19,7 @@
 
     <modules>
         <module>kafka-common</module>
+        <module>kafka-client</module>
     </modules>
 
     <properties>
