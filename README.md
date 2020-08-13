@@ -1,7 +1,7 @@
 
 ```bash
-/usr/local/zookeeper/bin/zkServer.sh start
-/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties
+./bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+./bin/kafka-server-start.sh -daemon config/server.properties
 ```
 
 
@@ -14,6 +14,59 @@
 拦截器
 
 ## Connect
+
+```shell
+# 单节点
+bin/connect-standalone.sh config/connect-standalone.properties \
+    config/connect-file-source.properties config/connect-file-sink.properties
+# 集群
+bin/connect-distributed.sh config/connect-distributed.properties
+```
+
+> https://kafka.apache.org/documentation/#connect_rest
+
+```http request
+### 查询
+
+GET http://luvx:8083/connectors HTTP/1.1
+
+### 创建source
+
+POST http://luvx:8083/connectors HTTP/1.1
+Content-type: application/json
+Accept: application/json
+
+{
+    "name": "test-file-source",
+    "config": {
+        "connector.class": "FileStreamSource",
+        "tasks.max": "1",
+        "topic": "connect-test",
+        "file": "test.txt"
+    }
+}
+
+### 创建sink
+
+POST http://luvx:8083/connectors HTTP/1.1
+Content-type: application/json
+Accept: application/json
+
+{
+    "name": "test-file-sink",
+    "config": {
+        "connector.class": "FileStreamSink",
+        "tasks.max": "1",
+        "topics": "connect-test",
+        "file": "test.sink.txt"
+    }
+}
+
+### 查看
+
+GET http://luvx:8083/connectors/test-file-source/config HTTP/1.1
+```
+SourceConnector, SinkConnector, SourceTask, SinkTask, SourceRecord, SinkRecord, Converter 以及 Transformation
 
 https://my.oschina.net/hnrpf/blog/1555915
 
