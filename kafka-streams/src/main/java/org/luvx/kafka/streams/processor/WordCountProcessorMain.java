@@ -1,32 +1,38 @@
-package org.luvx.kafka.streams.examples;
+package org.luvx.kafka.streams.processor;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.state.Stores;
+import org.luvx.kafka.streams.examples.WordCountDemo;
 
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 /**
  * @author: Ren, Xie
- * <pre>
- *     mvn exec:java -Dexec.mainClass=org.luvx.kafka.streams.examples.WordCountDemo
- * </pre>
  */
-public final class WordCountDemo {
-    public static final String SOURCE_TOPIC = "streams-plaintext-input";
-    public static final String SINK_TOPIC   = "streams-wordcount-output";
+public class WordCountProcessorMain {
+    public static final String SINK_TOPIC = "streams-wordcount-processor-output";
 
-    public static void main(String[] args) {
-        final StreamsBuilder builder = new StreamsBuilder();
-        streamExec(builder);
-
-        final KafkaStreams streams = new KafkaStreams(builder.build(), sourceConfig());
+    public static void main(final String[] args) {
+        final Topology builder = new Topology();
+        builder.addSource("Source", WordCountDemo.SOURCE_TOPIC);
+        builder.addProcessor("Process", new WordCountProcessorSupplier(), "Source");
+        builder.addStateStore(
+                Stores.keyValueStoreBuilder(
+                        Stores.inMemoryKeyValueStore("Counts"),
+                        Serdes.String(),
+                        Serdes.Integer()
+                ),
+                "Process"
+        );
+        org.apache.kafka.common.serialization.StringDeserializer a;
+        org.apache.kafka.common.serialization.IntegerDeserializer b;
+        builder.addSink("Sink", SINK_TOPIC, "Process");
+        final KafkaStreams streams = new KafkaStreams(builder, sourceConfig());
 
         //<editor-fold desc="通用部分">
         final CountDownLatch latch = new CountDownLatch(1);
@@ -48,23 +54,9 @@ public final class WordCountDemo {
         //</editor-fold>
     }
 
-    static void streamExec(final StreamsBuilder builder) {
-        final KStream<String, String> source = builder.stream(SOURCE_TOPIC);
-        source
-                .flatMapValues(
-                        value -> Arrays.asList(
-                                value.split(" ")
-                        )
-                )
-                .groupBy((key, value) -> value)
-                .count()
-                .toStream()
-                .to(SINK_TOPIC, Produced.with(Serdes.String(), Serdes.Long()));
-    }
-
-    static Properties sourceConfig() {
+    public static Properties sourceConfig() {
         final Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-wordcount");
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "streams-wordcount-processor");
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "luvx:9092");
         props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
