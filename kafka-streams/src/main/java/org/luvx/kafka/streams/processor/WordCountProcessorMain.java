@@ -29,8 +29,6 @@ public class WordCountProcessorMain {
                 ),
                 "Process"
         );
-        org.apache.kafka.common.serialization.StringDeserializer a;
-        org.apache.kafka.common.serialization.IntegerDeserializer b;
         builder.addSink("Sink", SINK_TOPIC, "Process");
         final KafkaStreams streams = new KafkaStreams(builder, sourceConfig());
 
