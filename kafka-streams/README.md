@@ -38,3 +38,7 @@ bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
 
 ### 实现stream
 
+```shell
+mvn clean package
+mvn exec:java -Dexec.mainClass=org.luvx.kafka.streams.examples.WordCountDemo
+```
