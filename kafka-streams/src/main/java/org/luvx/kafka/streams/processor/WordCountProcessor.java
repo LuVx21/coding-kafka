@@ -8,6 +8,7 @@ import org.apache.kafka.streams.state.KeyValueIterator;
 import org.apache.kafka.streams.state.KeyValueStore;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 /**
  * @package: org.luvx.kafka.stream.processor
@@ -15,36 +16,35 @@ import java.time.Duration;
  * @desc:
  */
 public class WordCountProcessor implements Processor<String, String> {
-    private ProcessorContext               context;
-    private KeyValueStore<String, Integer> kvStore;
+    private ProcessorContext            context;
+    private KeyValueStore<String, Long> kvStore;
 
     @Override
     public void init(final ProcessorContext context) {
         this.context = context;
         this.context.schedule(Duration.ofSeconds(1), PunctuationType.STREAM_TIME, timestamp -> {
-            try (final KeyValueIterator<String, Integer> iter = kvStore.all()) {
-                System.out.println("----------- " + timestamp + " ----------- ");
-                while (iter.hasNext()) {
-                    final KeyValue<String, Integer> entry = iter.next();
-                    System.out.println("[" + entry.key + ", " + entry.value + "]");
+            try (final KeyValueIterator<String, Long> it = kvStore.all()) {
+                while (it.hasNext()) {
+                    final KeyValue<String, Long> entry = it.next();
                     context.forward(entry.key, entry.value.toString());
                 }
             }
         });
-        this.kvStore = (KeyValueStore<String, Integer>) context.getStateStore("Counts");
+        kvStore = (KeyValueStore<String, Long>) context.getStateStore("Counts");
     }
 
     @Override
     public void process(String key, String value) {
-        final String[] words = value.split(" ");
-        for (final String word : words) {
-            final Integer oldValue = this.kvStore.get(word);
-            if (oldValue == null) {
-                this.kvStore.put(word, 1);
-            } else {
-                this.kvStore.put(word, oldValue + 1);
-            }
-        }
+        Arrays.stream(value.split(" ")).forEach(
+                word -> {
+                    Long oldValue = kvStore.get(word);
+                    if (oldValue == null) {
+                        kvStore.put(word, 1L);
+                    } else {
+                        kvStore.put(word, oldValue + 1L);
+                    }
+                }
+        );
     }
 
     @Override
