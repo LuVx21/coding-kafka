@@ -25,7 +25,7 @@ public class WordCountProcessorMain {
                 Stores.keyValueStoreBuilder(
                         Stores.inMemoryKeyValueStore("Counts"),
                         Serdes.String(),
-                        Serdes.Long()
+                        Serdes.Integer()
                 ),
                 "Process"
         );

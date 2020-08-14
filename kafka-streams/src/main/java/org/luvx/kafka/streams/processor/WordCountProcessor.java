@@ -16,32 +16,32 @@ import java.util.Arrays;
  * @desc:
  */
 public class WordCountProcessor implements Processor<String, String> {
-    private ProcessorContext            context;
-    private KeyValueStore<String, Long> kvStore;
+    private ProcessorContext               context;
+    private KeyValueStore<String, Integer> kvStore;
 
     @Override
     public void init(final ProcessorContext context) {
         this.context = context;
         this.context.schedule(Duration.ofSeconds(1), PunctuationType.STREAM_TIME, timestamp -> {
-            try (final KeyValueIterator<String, Long> it = kvStore.all()) {
+            try (final KeyValueIterator<String, Integer> it = kvStore.all()) {
                 while (it.hasNext()) {
-                    final KeyValue<String, Long> entry = it.next();
+                    final KeyValue<String, Integer> entry = it.next();
                     context.forward(entry.key, entry.value.toString());
                 }
             }
         });
-        kvStore = (KeyValueStore<String, Long>) context.getStateStore("Counts");
+        kvStore = (KeyValueStore<String, Integer>) context.getStateStore("Counts");
     }
 
     @Override
     public void process(String key, String value) {
         Arrays.stream(value.split(" ")).forEach(
                 word -> {
-                    Long oldValue = kvStore.get(word);
+                    Integer oldValue = kvStore.get(word);
                     if (oldValue == null) {
-                        kvStore.put(word, 1L);
+                        kvStore.put(word, 1);
                     } else {
-                        kvStore.put(word, oldValue + 1L);
+                        kvStore.put(word, oldValue + 1);
                     }
                 }
         );
