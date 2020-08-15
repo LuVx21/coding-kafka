@@ -57,8 +57,8 @@ public class KafkaUtils {
         Object key = record.key();
         Object value = record.value();
         log.info("------------------消费↓------------------------");
-        log.info("Topic:{} Partition:{} offset:{} key:{}", topic, partitionNum, offset, key);
-        log.info("msg:{}", value);
+        log.info("Topic: {} Partition: {} offset: {}", topic, partitionNum, offset);
+        log.info("key: {} msg: {}", key, value);
         log.info("------------------消费↑------------------------");
     }
 
