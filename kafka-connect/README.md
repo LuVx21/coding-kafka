@@ -21,10 +21,10 @@ https://docs.confluent.io/current/connect.html
 
 ```shell
 # 单节点
-bin/connect-standalone.sh config/connect-standalone.properties \
+./bin/connect-standalone.sh config/connect-standalone.properties \
     config/connect-file-source.properties config/connect-file-sink.properties
 # 集群
-bin/connect-distributed.sh config/connect-distributed.properties
+./bin/connect-distributed.sh -daemon config/connect-distributed.properties
 ```
 
 ## connect rest api
@@ -113,28 +113,6 @@ cp /opt/debezium/lib/mysql-connector-java-8.0.16.jar /opt/kafka/plugin/debezium-
 ```
 
 启动zk, kafka服务, connect服务, debezium服务
-
-```http
-POST http://luvx:8083/connectors HTTP/1.1
-Content-type: application/json
-Accept: application/json
-
-{
-  "name": "luvx-connector",
-  "config": {
-    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
-    "database.hostname": "127.0.0.1",
-    "database.port": "3306",
-    "database.user": "root",
-    "database.password": "1121",
-    "database.server.id": "1",
-    "database.server.name": "luvx",
-    "database.history.kafka.bootstrap.servers": "211.159.175.179:9092",
-    "database.history.kafka.topic": "dbhistory.fullfillment",
-    "include.schema.changes": "true"
-  }
-}
-```
 
 ## 参考
 
