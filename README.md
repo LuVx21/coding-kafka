@@ -66,12 +66,24 @@ Accept: application/json
 
 GET http://luvx:8083/connectors/test-file-source/config HTTP/1.1
 ```
-SourceConnector, SinkConnector, SourceTask, SinkTask, SourceRecord, SinkRecord, Converter 以及 Transformation
 
 https://my.oschina.net/hnrpf/blog/1555915
 
 https://blog.csdn.net/u011687037/article/details/57411790
 
 https://yanbin.blog/kafka-connect-how-to/#more-9655
+
+实现connect的关键类
+
+```Java
+org.apache.kafka.connect.source.SourceConnector
+org.apache.kafka.connect.source.SourceTask
+org.apache.kafka.connect.source.SourceRecord
+org.apache.kafka.connect.sink.SinkConnector
+org.apache.kafka.connect.sink.SinkTask
+org.apache.kafka.connect.sink.SinkRecord
+org.apache.kafka.connect.storage.Converter
+org.apache.kafka.connect.transforms.Transformation
+```
 
 ## Streams

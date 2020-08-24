@@ -21,6 +21,7 @@
         <module>kafka-common</module>
         <module>kafka-client</module>
         <module>kafka-streams</module>
+        <module>kafka-connect</module>
     </modules>
 
     <properties>
