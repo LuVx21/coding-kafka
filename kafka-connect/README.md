@@ -112,7 +112,7 @@ cp /opt/debezium/lib/mysql-binlog-connector-java-0.20.1.jar /opt/kafka/plugin/de
 cp /opt/debezium/lib/mysql-connector-java-8.0.16.jar /opt/kafka/plugin/debezium-mysql
 ```
 
-启动zk, kafka服务, connect服务, debezium服务
+启动zk, kafka服务, connect服务, 提交connect任务
 
 ## 参考
 

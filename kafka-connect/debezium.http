@@ -29,4 +29,4 @@ GET http://luvx:8083/connectors HTTP/1.1
 
 ### 查2
 
-GET http://luvx:8083/connectors/luvx-connector1/config HTTP/1.1
+GET http://luvx:8083/connectors/luvx-connector/config HTTP/1.1
