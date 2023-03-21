@@ -1,6 +1,7 @@
 package org.luvx.kafka.producer;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.kafka.clients.producer.*;
 import org.luvx.kafka.common.config.KafkaConfig;
 import org.luvx.kafka.common.entity.User;
@@ -28,10 +29,7 @@ public class OldClientProducer {
      */
     public void send(User user) {
         Properties props = KafkaUtils.getProducerProp();
-        /// 自定义分区器
-        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class.getName());
-        /// 添加拦截器
-        props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, MyProducerInterceptor.class.getName());
+        addProperties(props);
         Producer<String, User> producer = new KafkaProducer<>(props);
 
         ProducerRecord<String, User> producerRecord = new ProducerRecord<>(
@@ -50,6 +48,19 @@ public class OldClientProducer {
             log.error("发送消息异常 ex:{} topic: {}, msg: {}", ex, KafkaConfig.TOPIC_SIMPLE, user);
         }
         producer.flush();
+    }
+
+    private void addProperties(Properties props) {
+        // 发送消息的本地缓冲区大小, 默认 32M,
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        // 批量发送消息的大小, 默认 16k
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+        // 消息在缓冲区最长停留时间
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 10);
+        /// 自定义分区器
+        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, MyPartitioner.class.getName());
+        /// 添加拦截器
+        props.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, MyProducerInterceptor.class.getName());
     }
 
     /**

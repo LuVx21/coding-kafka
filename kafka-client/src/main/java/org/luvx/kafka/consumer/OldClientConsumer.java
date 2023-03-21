@@ -1,7 +1,15 @@
 package org.luvx.kafka.consumer;
 
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -11,9 +19,7 @@ import org.luvx.kafka.common.config.KafkaConfig;
 import org.luvx.kafka.common.utils.KafkaUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.*;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @ClassName: org.luvx._new
@@ -30,6 +36,7 @@ public class OldClientConsumer {
      */
     public void get() {
         Properties props = KafkaUtils.getConsumerProp();
+        addProperties(props);
         Consumer<String, String> consumer = new KafkaConsumer<>(props);
 
         List<TopicPartition> partitions = new ArrayList<>();
@@ -48,6 +55,17 @@ public class OldClientConsumer {
             KafkaUtils.print(records);
             consumer.commitSync();
         }
+    }
+
+    private void addProperties(Properties props) {
+        // consumer给 broker发送心跳的时间间隔
+        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 1000);
+        // broker 感知不到 consumer 的最大时间, 超过了会认为 consumer 挂了
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 10 * 1000);
+        // consumer 每次请求的最大记录数, 消费者处理速度快则可以适当调大
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+        // 两次拉取的最大时间间隔, 超过了会认为消费者处理能力弱, 会将其踢出消费区, 触发再平衡
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 30 * 1000);
     }
 
     /**

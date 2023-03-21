@@ -4,7 +4,7 @@
 
 ### 官方例子
 
-```shell
+```bash
 # 创建topic
 bin/kafka-topics.sh --create \
     --zookeeper localhost:2181 \
@@ -42,3 +42,7 @@ bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
 mvn clean package
 mvn exec:java -Dexec.mainClass=org.luvx.kafka.streams.examples.WordCountDemo
 ```
+
+## 资料
+
+https://www.cnblogs.com/huxi2b/p/11525660.html
