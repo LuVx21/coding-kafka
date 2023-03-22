@@ -1,8 +1,23 @@
 package org.luvx.kafka.common.utils;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson2.JSONObject;
+import com.google.common.collect.Streams;
+
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -10,28 +25,21 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
-/**
- * @ClassName: org.luvx.utils
- * @Description:
- * @Author: Ren, Xie
- * @Date: 2019/1/5 11:10
- */
 @Slf4j
 public class KafkaUtils {
     private final static String PREFIX_KAFKA          = "kafka.";
     private final static String PREFIX_KAFKA_CONSUMER = "kafka.consumer.";
     private final static String PREFIX_KAFKA_PRODUCER = "kafka.producer.";
     private final static String PREFIX_TOPIC          = "topic.regex";
+    private static final String CONFIG_PATH_PRODUCER  = "config/kafka/kafka-producer.properties";
+    private static final String CONFIG_PATH_CONSUMER  = "config/kafka/kafka-consumer.properties";
 
     public static Properties getProducerProp() {
-        return PropertiesUtils.getProperties("config/kafka/kafka-producer.properties");
+        return PropertiesUtils.getProperties(CONFIG_PATH_PRODUCER);
     }
 
     public static Properties getConsumerProp() {
-        return PropertiesUtils.getProperties("config/kafka/kafka-consumer.properties");
+        return PropertiesUtils.getProperties(CONFIG_PATH_CONSUMER);
     }
 
     /**
@@ -65,17 +73,13 @@ public class KafkaUtils {
     /**
      * 拼接topic
      *
-     * @param topics
      * @param topicPrefix topic前缀
-     * @return
      */
-    public static Collection<String> resolveTopics(Collection<String> topics, String topicPrefix) {
+    public static List<String> resolveTopics(String topicPrefix, Collection<String> topics) {
         Assert.notEmpty(topics, "Topics不可为空");
-        List<String> list = new ArrayList<>(topics.size());
-        for (String topic : topics) {
-            list.add(topicPrefix + topic);
-        }
-        return list;
+        return topics.stream()
+                .map(topic -> topicPrefix + topic)
+                .collect(Collectors.toList());
     }
 
     public static <K, V> MessageConsumer<K, V> createConsumer(String consumerClass, Properties properties,
@@ -102,21 +106,12 @@ public class KafkaUtils {
     }
 
     public static <K, V> Map<TopicPartition, OffsetAndMetadata> convertToOffsets(ConsumerRecords<K, V> records) {
-        Iterator<ConsumerRecord<K, V>> iterator = records.iterator();
-        Map<TopicPartition, OffsetAndMetadata> offsets = new LinkedHashMap<>();
-        ConsumerRecord<K, V> record = null;
-        while (iterator.hasNext()) {
-            record = iterator.next();
-            offsets = convertToOffsets(record, offsets);
-        }
-        return offsets;
-    }
-
-    public static <K, V> Map<TopicPartition, OffsetAndMetadata> convertToOffsets(ConsumerRecord<K, V> record,
-                                                                                 Map<TopicPartition, OffsetAndMetadata> offsets) {
-        offsets.put(new TopicPartition(record.topic(), record.partition()),
-                new OffsetAndMetadata(record.offset() + 1));
-        return offsets;
+        return Streams.stream(records)
+                .collect(Collectors.toMap(
+                        record -> new TopicPartition(record.topic(), record.partition()),
+                        record -> new OffsetAndMetadata(record.offset() + 1),
+                        (a, b) -> b
+                ));
     }
 
     private static String retrieveTopicRegex(Properties properties) {
@@ -156,7 +151,7 @@ public class KafkaUtils {
 
                 if (key.startsWith(otherPrefix)) {
                     p.put(key.substring(otherPrefix.length()), entry.getValue());
-                } else if (key.startsWith(PREFIX_KAFKA, 0)) {
+                } else if (key.startsWith(PREFIX_KAFKA)) {
 
                     if (PREFIX_KAFKA_PRODUCER.equals(otherPrefix)) {
                         if (!key.startsWith(PREFIX_KAFKA_CONSUMER)) {

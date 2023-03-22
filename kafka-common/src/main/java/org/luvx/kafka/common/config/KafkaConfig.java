@@ -6,11 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.converter.RecordMessageConverter;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 
-/**
- * @package: org.luvx.kafka.common.config
- * @author: Ren, Xie
- * @desc:
- */
 @Configuration
 public class KafkaConfig {
     public static final String TOPIC_SIMPLE = "topic-simple";

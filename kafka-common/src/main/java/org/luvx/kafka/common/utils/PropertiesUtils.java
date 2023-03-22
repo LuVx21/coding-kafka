@@ -8,12 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * @ClassName: org.luvx.utils
- * @Description:
- * @Author: Ren, Xie
- * @Date: 2019/12/2 10:57
- */
 @Slf4j
 public class PropertiesUtils {
 

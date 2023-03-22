@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.luvx.kafka.common.config.KafkaConfig;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.kafka.test.context.EmbeddedKafka;
@@ -17,7 +18,7 @@ import static org.springframework.kafka.test.EmbeddedKafkaBroker.BROKER_LIST_PRO
         ports = {59092, 59093, 59094, 59095},
         partitions = 3,
         zookeeperPort = 52181,
-        topics = {"embedded-spring"}
+        topics = {KafkaConfig.TOPIC_SIMPLE}
 )
 @ImportAutoConfiguration(KafkaAutoConfiguration.class)
 public class EmbeddedKafkaTest {
